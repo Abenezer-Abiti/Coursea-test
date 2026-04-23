@@ -1,8 +1,9 @@
 import random
+import os
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import ApplicationBuilder, CallbackQueryHandler, CommandHandler, ContextTypes
 
-TOKEN = "8663914505:AAF8pL-4OYn51SnB0z2dTwgES-WRYt92gvo"
+TOKEN = os.environ.get("TOKEN")
 
 symbols = ['🍎','🍌','🍇','🍉']
 games = {}
@@ -43,7 +44,10 @@ async def click(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await query.answer()
 
     user = query.from_user.id
-    game = games[user]
+    game = games.get(user)
+    if not game:
+        return
+
     i = int(query.data)
 
     if game["show"][i]:
@@ -55,6 +59,7 @@ async def click(update: Update, context: ContextTypes.DEFAULT_TYPE):
         game["first"] = i
     else:
         first = game["first"]
+
         if game["board"][first] != game["board"][i]:
             await query.edit_message_reply_markup(
                 reply_markup=keyboard(game["board"], game["show"])
